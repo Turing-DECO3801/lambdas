@@ -1,4 +1,10 @@
 const AWS = require('aws-sdk');
+
+/**
+ * MYSQL Reference used to create calls on the AWS RDS.
+ * 
+ * The data here has been set as Environment Variables on the AWS server.
+ */
 const mysql = require('serverless-mysql')({
     config: {
         host: "iot-core-database.cyxshb8rdcqi.ap-southeast-2.rds.amazonaws.com",
@@ -8,10 +14,20 @@ const mysql = require('serverless-mysql')({
     }
 })
 
+/**
+ * Converts a date-time to an epoch for unique file referencing based on
+ * time of data logs and user ID.
+ * 
+ * @param {Epoch} timestamp 
+ * @returns 
+ */
 const getEpoch = (timestamp) => {
     return Date.parse(timestamp);
 }
 
+/**
+ * AWS S3 Reference used to upload files for reference in the RDS.
+ */
 const S3 = new AWS.S3({
     accessKeyId: "AKIAQS6BQ7LYHQ4FAFP7",
     secretAccessKey: "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"
@@ -19,44 +35,28 @@ const S3 = new AWS.S3({
 
 exports.handler = async (event) => {
     
-    // let audioData = event.body;
-    
-    // let audioDataSegment = event.headers.index;
-    
-    // let epoch = getEpoch("2022-07-09 12:25:23") / 1000; //getEpoch(event.headers.timestamp);
-    
-    // let userid = 1; //event.headers.userid;
-    
-    // let entryReference = `${epoch}-${userid}-audio`;
-    
-    // let id = "Boo";
-    
+    // Reference Information
+
     let audioData = event.body;
-    
-    console.log(audioData)
     
     let audioIndex = event.headers.audioindex;
     
-    console.log(audioIndex)
-    
     let segmentIndex = event.headers.segmentindex;
     
-    console.log(segmentIndex)
+    console.log(segmentIndex);
     
     let userid = event.headers.userid;
     
-    console.log(userid)
-    
     let epoch = getEpoch(event.headers.timestamp) / 1000;
-    
-    console.log(epoch)
     
     let audioReference = `${epoch}-${userid}-${audioIndex}`;
     
-    console.log(audioReference)
-    
+    console.log(audioReference);
+
     let query;
 
+    // Checks whether the Audio Segment is the first to be uploaded or if there already
+    // exists a reference that the audio segment should be appended to
     if (segmentIndex == 0) {
         query = `INSERT INTO audio_buffer VALUES(\"${audioReference}\", \"${audioData}\")`;
     } else {
@@ -66,40 +66,6 @@ exports.handler = async (event) => {
     let results = await mysql.query(query);
     
     await mysql.end();
-    
-    /**
-    
-    let audioData = event.body;
-    
-    let audioIndex = event.headers.audioindex;
-    
-    let segmentIndex = event.headers.segmentindex;
-    
-    let userid = event.headers.userid;
-    
-    let epoch = getEpoch(event.headers.timestamp) / 1000;
-    
-    let audioReference = `${epoch}-${userid}-${audioIndex}`;
-    
-    let query;
-
-    if (segmentIndex == 0) {
-        query = `INSERT INTO audio_buffer VALUES(\"${audioReference}\", \"${audioData}\")`;
-    } else {
-        query = `UPDATE audio_buffer SET \`sound\` = CONCAT(sound, \"${audioData}\") WHERE id = \"${audioReference}\"`;
-    }
-    
-    let results = await mysql.query(query);
-    
-    await mysql.end();
-    
-    */
-    
-    // let query = `UPDATE audio_buffer SET \`sound\` = CONCAT(sound, \"${audioData}\") WHERE id = \"${id}\"`;
-    
-    // let results = await mysql.query(query);
-    
-    // await mysql.end()
     
     const response = {
         statusCode: 200,

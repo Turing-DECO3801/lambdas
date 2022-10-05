@@ -1,4 +1,10 @@
 const AWS = require('aws-sdk');
+
+/**
+ * MYSQL Reference used to create calls on the AWS RDS.
+ * 
+ * The data here has been set as Environment Variables on the AWS server.
+ */
 const mysql = require('serverless-mysql')({
     config: {
         host: "iot-core-database.cyxshb8rdcqi.ap-southeast-2.rds.amazonaws.com",
@@ -8,12 +14,28 @@ const mysql = require('serverless-mysql')({
     }
 })
 
+/**
+ * Function used to asynchronously wait for S3 and MYSQL calls to finish
+ * 
+ * @param {Time} ms 
+ * @returns 
+ */
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+/**
+ * Converts a date-time to an epoch for unique file referencing based on
+ * time of data logs and user ID.
+ * 
+ * @param {Epoch} timestamp 
+ * @returns 
+ */
 const getEpoch = (timestamp) => {
     return Date.parse(timestamp);
 }
 
+/**
+ * AWS S3 Reference used to upload files for reference in the RDS.
+ */
 const S3 = new AWS.S3({
     accessKeyId: "AKIAQS6BQ7LYHQ4FAFP7",
     secretAccessKey: "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"
@@ -24,33 +46,33 @@ exports.handler = async (event) => {
     
     // Reference Information
     
-    // let userid = event.headers.userid;
+    let userid = event.headers.userid;
 
-    // let epoch = getEpoch(event.headers.timestamp) / 1000;
+    let epoch = getEpoch(event.headers.timestamp) / 1000;
     
-    // let audioIndex = event.headers.audioindex;
+    let audioIndex = event.headers.audioindex;
     
-    // let filename = `${epoch}-${userid}-audio-${audioIndex}`;
+    let filename = `${epoch}-${userid}-audio-${audioIndex}`;
     
-    // let latitude = event.headers.latitude;
+    let latitude = Number(event.headers.latitude);
     
-    // let longitude = event.headers.longitude;
+    let longitude = Number(event.headers.longitude);
     
+
+    // Information logs for use on AWS CloudWatch
+    console.log(filename);
     
-    let epoch = getEpoch("2022-07-09 12:25:23") / 1000; //getEpoch(event.headers.timestamp);
+    console.log(latitude);
     
-    let userid = 1; //event.headers.userid;
-    
-    let audioIndex = 1;
-    
-    let filename = `${epoch}-${userid}-audio28`;
+    console.log(longitude);
+
     
     
     // Obtaining the Hike ID as the Foreign Key in the Audio table
     
     let gpsReference = `${epoch}-${userid}-gps`;
     
-    let idQuery = `SELECT id FROM hikes WHERE gps_logs = \"1662027950-test-gps\"`;
+    let idQuery = `SELECT id FROM hikes WHERE gps_logs = \"${gpsReference}\"`;
     
     let idResult = await mysql.query(idQuery);
     
@@ -69,10 +91,8 @@ exports.handler = async (event) => {
     
     let filePath = `audio/${filename}.wav`;
     
-    // let audioDataQuery = `SELECT sound FROM audio_buffer WHERE id = \"${audioReference}\"`;
-    
-    let audioDataQuery = `SELECT sound FROM audio_buffer WHERE id = \"Boo\"`;
-    
+    let audioDataQuery = `SELECT sound FROM audio_buffer WHERE id = \"${audioReference}\"`;
+        
     let audioDataResult = await mysql.query(audioDataQuery);
     
     await mysql.end();
@@ -88,57 +108,6 @@ exports.handler = async (event) => {
     
     // Upload Of Data to the S3 Database
     
-    // let params = {
-    //     "acl": 'public-read',
-    //     "Body": decodedData,
-    //     "Bucket": "gps-logs-deco",
-    //     "Key": filePath,
-    // }
-    
-    // S3.upload(params, (err, data) => {
-    //     if (err) {
-    //         console.log(err);
-    //         throw err;
-    //     }
-    // });
-
-    await sleep(300);
-
-    let memoUploadQuery = `INSERT INTO memos VALUES(NULL, ${hikeRefId}, \"${filename}\", -25, -25, NULL)`;
-    
-    let memoUploadResult = await mysql.query(memoUploadQuery);
-    
-    await mysql.end();
-    
-    await sleep(300);
-
-    
-    /**
-    
-    let userid = event.headers.userid;
-
-    let epoch = getEpoch(event.headers.timestamp) / 1000;
-    
-    let audioIndex = event.headers.audioindex;
-    
-    let audioReference = `${epoch}-${userid}-${audioIndex}`;
-    
-    let filePath = `audio/${filename}.wav`;
-    
-    let query = `SELECT sound FROM audio_buffer WHERE id = \"${audioReference}\"`;
-    
-    let result = await mysql.query(query);
-    
-    await mysql.end();
-    
-    let binaryData = Buffer.from(result[0].sound, "binary");
-    
-    let base64 = Buffer.from((result[0].sound).toString(), "base64");
-    
-    let decodedData = Buffer.from(temp, "base64");
-    
-    await sleep(200);
-    
     let params = {
         "acl": 'public-read',
         "Body": decodedData,
@@ -152,48 +121,19 @@ exports.handler = async (event) => {
             throw err;
         }
     });
+
+    await sleep(300);
     
-    await sleep(200);
-    */
     
+    // Upload the audio reference to the Memo table
+
+    let memoUploadQuery = `INSERT INTO memos VALUES(NULL, ${hikeRefId}, \"${filename}\", ${latitude}, ${longitude}, NULL, NULL, )`;
     
-    // let epoch = getEpoch("2022-07-09 12:25:23") / 1000; //getEpoch(event.headers.timestamp);
+    let memoUploadResult = await mysql.query(memoUploadQuery);
     
-    // let userid = 1; //event.headers.userid;
+    await mysql.end();
     
-    // let filename = `${epoch}-${userid}-audio28`;
-    
-    // let filePath = `audio/${filename}.wav`;
-    
-    // let query = `SELECT sound FROM audio_buffer WHERE id = \"Boo\"`;
-    
-    // let result = await mysql.query(query);
-    
-    // await mysql.end();
-    
-    // let binaryData = Buffer.from(result[0].sound, "binary");
-    
-    // let temp = Buffer.from((result[0].sound).toString(), "base64");
-    
-    // let temp2 = Buffer.from(temp, "base64");
-    
-    // await sleep(500);
-    
-    // let params = {
-    //     "acl": 'public-read',
-    //     "Body": temp2,
-    //     "Bucket": "gps-logs-deco",
-    //     "Key": filePath,
-    // }
-    
-    // S3.upload(params, (err, data) => {
-    //     if (err) {
-    //         console.log(err);
-    //         throw err;
-    //     }
-    // });
-    
-    // await sleep(500);
+    await sleep(300);
     
     const response = {
         statusCode: 200,
