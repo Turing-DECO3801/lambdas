@@ -2,6 +2,9 @@
 
 ## Functionality
 
+![image](https://user-images.githubusercontent.com/86467852/194072490-8ef8fa89-0225-4d67-8b5f-1393273a47bd.png)
+
+
 The prototype contains a hardware device that is capable of recording and storing audio and GPS information and we wanted a way of uploading the data in an easy way for users. The most sought after method of data upload was wireless through the internet. These Lambda Functions allow for this to take place with different Serverless functions uploading and storing data.
 
 ## AWS Lambdas
@@ -10,10 +13,14 @@ The Serverless Function being used for the upload of data has been with Lambda f
 
 So clearly seperate the different functions that are required for the data upload, multiple Lambda functions are running simultaneously for a single data upload so keep the HTTPS request minimal and specific to their function. The lambda functions that are being used are shown below.
 
+Multiple Lambda functions have allowed multiple calls to be made as there are many dependencies in the upload process after a single hike. This is the upload and insertino of multiple voice memos in a single hike which requires a reference to the hike in the main table. 
+
 ### GPS Upload
 
-
+The GPS upload will require the CSV data of the GPS logs to be sent along with relevant information such as timestamp and user ID to correctly reference the user that this will be storerd under. In the GPS call, a CSV file will be inserted into the S3 database with a reference ID dependent on the timestamp and the S3 reference will then be stored in the MySQL database along with information required on the front end application.
 
 ### Audio Buffer Upload
+
+Through testing, it was found that hardware libraries such as HTTPClient used on the M5STACK CORE2 had a limited number of bytes that could be sent in a single HTTP request. To counteract this, multiple HTTP requests are made with an intermediate buffer to concatenate the data to build the complete file. The concatenated data will be used in the final Audio Upload to decode the data into raw binary audio data and complete the process with insertions into the database and file storage.
 
 ### Audio Upload
