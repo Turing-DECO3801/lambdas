@@ -24,3 +24,5 @@ The GPS upload will require the CSV data of the GPS logs to be sent along with r
 Through testing, it was found that hardware libraries such as HTTPClient used on the M5STACK CORE2 had a limited number of bytes that could be sent in a single HTTP request. To counteract this, multiple HTTP requests are made with an intermediate buffer to concatenate the data to build the complete file. The concatenated data will be used in the final Audio Upload to decode the data into raw binary audio data and complete the process with insertions into the database and file storage.
 
 ### Audio Upload
+
+The last AWS Lambda was used to concatenate all the different audio segments that have been uploaded and decode it back into their raw audio data. The data had been encoded with Base64 encoding to prevent loss or corruption of data during upload. Once the data has been retrieved from the Buffer database table, it will be decoded and uploaded to an S3 Bucket and into the Memo table in the RDS for reference on the front end so it can be displayed with its relevant
