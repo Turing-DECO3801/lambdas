@@ -23,9 +23,9 @@ Multiple Lambda functions have allowed multiple calls to be made as there are ma
 The GPS upload will require the CSV data of the GPS logs to be sent along with relevant information such as timestamp and user ID to correctly reference the user that this will be storerd under. In the GPS call, a CSV file will be inserted into the S3 database with a reference ID dependent on the timestamp and the S3 reference will then be stored in the MySQL database along with information required on the front end application.
 
 Information required to be sent with the HTTP POST request will be the 
-```
-POST Request
 
+### `POST Request`
+```
 Headers: {
   id: device_id,
   start_time: float,
@@ -41,9 +41,9 @@ Body: {
 
 Through testing, it was found that hardware libraries such as HTTPClient used on the M5STACK CORE2 had a limited number of bytes that could be sent in a single HTTP request. To counteract this, multiple HTTP requests are made with an intermediate buffer to concatenate the data to build the complete file. The concatenated data will be used in the final Audio Upload to decode the data into raw binary audio data and complete the process with insertions into the database and file storage.
 
-```
-POST Request
+### `POST Request`
 
+```
 Headers: {
   id: device_id,
   start_time: float,
@@ -59,9 +59,8 @@ Body: {
 
 The last AWS Lambda was used to concatenate all the different audio segments that have been uploaded and decode it back into their raw audio data. The data had been encoded with Base64 encoding to prevent loss or corruption of data during upload. Once the data has been retrieved from the Buffer database table, it will be decoded and uploaded to an S3 Bucket and into the Memo table in the RDS for reference on the front end so it can be displayed with its relevant information.
 
+### `POST Request`
 ```
-POST Request
-
 Headers: {
   id: device_id,
   start_time: float,
