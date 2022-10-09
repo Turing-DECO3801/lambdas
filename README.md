@@ -1,5 +1,8 @@
 # GPS Logging and Audio Recording Upload
 
+## How To Use
+These Serverless functions have been uploaded to the AWS Lambdas and are highly dependent on other AWS services such as AWS RDS as the database provider and AWS S3 for file storage. These functions can be uploaded to AWS as a ZIP file however, configuration of environment variables containing passwords and authorisation keys must also be included the Lambda.  
+
 ## Functionality
 
 ![image](https://user-images.githubusercontent.com/86467852/194072490-8ef8fa89-0225-4d67-8b5f-1393273a47bd.png)
