@@ -7,10 +7,10 @@ const AWS = require('aws-sdk');
  */
 const mysql = require('serverless-mysql')({
     config: {
-        host: "iot-core-database.cyxshb8rdcqi.ap-southeast-2.rds.amazonaws.com",
+        host: "",
         database: "hiking_memory_maker",
-        user: "admin",
-        password: "deco3801",
+        user: "",
+        password: "",
     }
 })
 
@@ -29,8 +29,8 @@ const getEpoch = (timestamp) => {
  * AWS S3 Reference used to upload files for reference in the RDS.
  */
 const S3 = new AWS.S3({
-    accessKeyId: "AKIAQS6BQ7LYHQ4FAFP7",
-    secretAccessKey: "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"
+    accessKeyId: "",
+    secretAccessKey: ""
 })
 
 exports.handler = async (event) => {
